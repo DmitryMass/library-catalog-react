@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import clsx from 'clsx';
 import { toast } from 'sonner';
-import { Book } from 'types/types';
+import { Book, CustomError } from 'types/types';
 
 import { useDebounceValue } from '@hooks/useDebouncedValue';
 
@@ -33,10 +33,15 @@ export const ArchiveSearchPanel: FC = () => {
             const results = res.data;
             foundedBooksCache[debauncedString] = results;
             setFoundBook(results);
-          } catch (err: any) {
-            toast.error(
-              `Використовуйте тільки Українські літери. ${err.response.data.error}. `,
-            );
+          } catch (err: unknown) {
+            const currErr = err as CustomError;
+            if (currErr.response) {
+              toast.error(
+                `Використовуйте тільки Українські літери. ${currErr.response.data.error}. `,
+              );
+            } else {
+              toast.error(currErr.message);
+            }
           }
         } else {
           setFoundBook(foundedBooksCache[debauncedString]);

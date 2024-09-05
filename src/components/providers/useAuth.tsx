@@ -17,7 +17,7 @@ type TAuthContextProps = {
       {
         token: string;
       },
-      any
+      unknown
     >,
     CustomError,
     TLoginFormProps,
