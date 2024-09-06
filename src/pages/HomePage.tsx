@@ -10,6 +10,7 @@ import { useSearchParams } from 'react-router-dom';
 import { TBooksResponse } from 'types/types';
 
 import { BookItem } from '@components/books/BookItem';
+import { ClassNumberFilter } from '@components/ui/ClassNumberFilter';
 import { DataList } from '@components/ui/DataList';
 import { PageLoading } from '@components/ui/PageLoading';
 import { Pagination } from '@components/ui/Pagination';
@@ -27,16 +28,22 @@ const HomePage: FC = () => {
   const currentPage = searchParams.get('page')
     ? Number(searchParams.get('page'))
     : 1;
+  const classNumber = searchParams.get('classNumber')
+    ? searchParams.get('classNumber')
+    : 'all';
 
-  const { data, isError, error, isLoading } = useQuery<TBooksResponse>({
-    queryKey: [queryKey.books, currentPage],
-    queryFn: () => getBooks(BookTypeObject.book, currentPage),
-    initialData: queryClient.getQueryData([
-      queryKey.books,
-      currentPage,
-    ]) as TBooksResponse,
-    placeholderData: keepPreviousData,
-  });
+  const { data, isError, error, isLoading, isFetching } =
+    useQuery<TBooksResponse>({
+      queryKey: [queryKey.books, currentPage, classNumber],
+      queryFn: () =>
+        getBooks(BookTypeObject.book, currentPage, `${classNumber}`),
+      initialData: queryClient.getQueryData([
+        queryKey.books,
+        currentPage,
+        classNumber,
+      ]) as TBooksResponse,
+      placeholderData: keepPreviousData,
+    });
 
   if (isLoading) {
     return <PageLoading />;
@@ -49,30 +56,33 @@ const HomePage: FC = () => {
   return (
     <div className="container w-full flex-1 py-10">
       <SearchPanel type={BookTypeObject.book} eachBook={PATH.books} />
+      <ClassNumberFilter isFetching={isFetching} />
       <>
         {data?.books.length ? (
           <>
             {data.total || data.totalPrice ? (
-              <div className="mb-3 flex w-full items-center justify-between border-b border-fern-500 pb-2">
-                {data.total ? (
-                  <p className="text-sm16 font-normal">
-                    Кількість книг:{' '}
-                    <span className="ml-1 font-bold text-fern-900">
-                      {data.total}
-                    </span>
-                  </p>
-                ) : null}
-                {data.totalPrice ? (
-                  <p className="text-sm16 font-normal">
-                    Загальна вартість:{' '}
-                    <span className="ml-1 font-bold text-fern-900">
-                      {new Intl.NumberFormat('ua', {
-                        currency: 'uah',
-                      }).format(data.totalPrice)}{' '}
-                      грн.
-                    </span>
-                  </p>
-                ) : null}
+              <div>
+                <div className="mb-3 flex w-full items-center justify-between border-b border-fern-500 pb-2">
+                  {data.total ? (
+                    <p className="text-sm16 font-normal">
+                      Кількість книг:{' '}
+                      <span className="ml-1 font-bold text-fern-900">
+                        {data.total}
+                      </span>
+                    </p>
+                  ) : null}
+                  {data.totalPrice ? (
+                    <p className="text-sm16 font-normal">
+                      Загальна вартість:{' '}
+                      <span className="ml-1 font-bold text-fern-900">
+                        {new Intl.NumberFormat('ua', {
+                          currency: 'uah',
+                        }).format(data.totalPrice)}{' '}
+                        грн.
+                      </span>
+                    </p>
+                  ) : null}
+                </div>
               </div>
             ) : null}
             <div className="mb-6 grid grid-cols-7 place-items-start">

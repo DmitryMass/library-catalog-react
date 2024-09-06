@@ -2,12 +2,17 @@ import { Book, TBooksResponse } from 'types/types';
 
 import $api from './axiosInstance';
 
-export const getBooks = async (type: string, pageNum: number) => {
+export const getBooks = async (
+  type: string,
+  pageNum: number,
+  classNumber?: string,
+) => {
   const response = await $api.get<TBooksResponse>(`catalog/books`, {
     params: {
       type,
       page: pageNum,
       limit: 10,
+      classNumber,
     },
   });
   return response.data;
